@@ -1,0 +1,62 @@
+POST http://localhost:3000/api/groups/17/posts
+Content-Type: application/json
+
+{
+	"nickname": "횬랑단",
+	"title": "우현이 콘서트에 갔다옴!",
+	"content": "우현이는 천재강아디 아기명창이 맞다ㅇㅇ",
+	"postPassword": "0208",
+	"groupPassword": "0609",
+	"imageUrl": "https://example.com/images/nwh0208.jpg",
+	"tags": [ "인피니트", "남우현" ],
+	"location": "올림픽홀",
+	"moment": "2024-09-22",
+	"isPublic": true
+}
+
+###
+
+GET http://localhost:3000/api/groups/17/posts
+
+###
+
+PUT http://localhost:3000/api/posts/15
+Content-Type: application/json
+
+
+{
+	"nickname": "횬랑단0208",
+	"title": "우현이 콘서트에 갔다옴",
+	"content": "사랑하는 우혀니!!",
+	"postPassword": "0208",
+	"imageUrl": "https://example.com/images/nwh0208.jpg",
+	"tags": [ "남우현" ],
+	"location": "올림픽홀",
+	"moment": "2024-09-22",
+	"isPublic": false
+}
+
+###
+DELETE http://localhost:3000/api/posts/14
+Content-Type: application/json
+
+{
+  "postPassword": "0208"
+}
+
+###
+POST http://localhost:3000/api/posts/15/verify-password
+Content-Type: application/json
+
+{
+	"password": "0208"
+}
+
+###
+POST http://localhost:3000/api/posts/16/like
+
+###
+GET http://localhost:3000/api/posts/15/is-public
+
+###
+GET http://localhost:3000/api/posts/15/

@@ -1,0 +1,23 @@
+POST http://localhost:3000/api/image/upload
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="image"; filename="highschool.jpeg"
+Content-Type: image/jpeg
+
+< ./imageFiles/highschool.jpeg
+--boundary--
+
+###
+GET http://localhost:3000/uploads/1725001542328.jpeg
+
+###
+POST http://localhost:3000/api/image/upload
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="image"; filename="하니.jpg"
+Content-Type: image/jpeg
+
+< ./imageFiles/하니.jpg
+--boundary--

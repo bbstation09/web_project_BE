@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// model
+model Group {
+  id           Int          @id @default(autoincrement())
+  name         String       @db.VarChar(50)
+  imageUrl     String       @db.VarChar(255)
+  introduction String
+  isPublic     Boolean
+  password     String       @db.VarChar(10)
+  createdAt    DateTime     @default(now())
+  likeCount    Int          @default(0)
+  postCount    Int          @default(0)
+  badgeCount   Int          @default(0) 
+  posts        Post[]
+  groupBadges  GroupBadge[]
+
+  @@index([name])
+  @@index([isPublic, createdAt])
+}
+
+model Post {
+  id           Int       @id @default(autoincrement())
+  groupId      Int?
+  group        Group?    @relation(fields: [groupId], references: [id])
+  nickname     String    @db.VarChar(255)
+  title        String    @db.VarChar(255)
+  imageUrl     String    @db.VarChar(255)
+  content      String
+  tags         String    @db.VarChar(255)
+  location     String    @db.VarChar(255)
+  moment       DateTime
+  isPublic     Boolean
+  password     String    @db.VarChar(255)
+  likeCount    Int       @default(0)
+  commentCount Int       @default(0)
+  createdAt    DateTime  @default(now())
+  comments     Comment[]
+
+  @@index([title])
+  @@index([createdAt])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  postId    Int?
+  post      Post?    @relation(fields: [postId], references: [id])
+  nickname  String   @db.VarChar(255)
+  content   String
+  password  String   @db.VarChar(255)
+  createdAt DateTime @default(now())
+}
+
+model Badge {
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(255)
+  groupBadges GroupBadge[]
+}
+
+model GroupBadge {
+  id         Int      @id @default(autoincrement())
+  groupId    Int?
+  group      Group?   @relation(fields: [groupId], references: [id])
+  badgeId    Int?
+  badge      Badge?   @relation(fields: [badgeId], references: [id])
+  acquiredAt DateTime @default(now())
+}

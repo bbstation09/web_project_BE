@@ -1,0 +1,80 @@
+POST http://localhost:3000/api/groups
+Content-Type: application/json
+
+{
+	"name": "하스뮤 loversclub",
+	"password": "0609",
+	"imageUrl": "http://localhost:3000/uploads/1725001542328.jpeg",
+	"isPublic": true,
+	"introduction": "그 시절 하스뮤덕들 모여라아아"
+}
+
+###
+PUT http://localhost:3000/api/groups/16
+Content-Type: application/json
+
+{
+	"name": "미묘 수정",
+	"password": "0609",
+	"imageUrl": "https://example.com/images/animals.jpg",
+	"isPublic": true,
+	"introduction": "수정수정"
+}
+
+###
+DELETE http://localhost:3000/api/groups/16
+Content-Type: application/json
+
+{
+  "password": "0609"
+}
+
+###
+
+
+GET http://localhost:3000/api/groups
+
+###
+
+GET http://localhost:3000/api/groups?sortBy=mostLiked
+
+###
+
+GET http://localhost:3000/api/groups?sortBy=mostPosted
+
+###
+GET http://localhost:3000/api/groups?sortBy=mostBadge
+
+###
+GET http://localhost:3000/api/groups?keyword=동호회&sortBy=mostPosted
+
+
+###
+GET http://localhost:3000/api/groups?isPublic=true
+
+
+
+
+
+
+
+
+
+
+###
+
+GET http://localhost:3000/api/groups/1
+
+###
+POST http://localhost:3000/api/groups/9/verify-password
+Content-Type: application/json
+
+{
+	"password": "movie1234"
+}
+
+###
+POST http://localhost:3000/api/groups/13/like
+
+###
+GET http://localhost:3000/api/groups/6/is-public
