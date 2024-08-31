@@ -113,77 +113,108 @@ export const deleteGroup = async (req, res) => {
 
 
 
-// 그룹 목록 조회 : 원래 코드
+// 그룹 목록 조회
 export const viewGroupList = async (req, res) => {
-    try {
-        // 기본 화면 : 최신 순으로 그룹 목록 출력
-        const { page = 1, pageSize = 20, sortBy = 'latest', keyword, isPublic } = req.query;
+  try {
+    // 요청으로부터 파라미터 추출
+    const {
+      page = 1,
+      pageSize = 20,
+      sortBy = 'latest',
+      keyword,
+      isPublic
+    } = req.query;
 
-        // 필터 객체 생성
-        const where = {};
-        if (isPublic) {
-            where.isPublic = isPublic === 'true'; // 'isPublic'을 boolean으로 변환
-        }
-        if (keyword) {
-            where.name = { contains: keyword, mode: 'insensitive' }; // 대소문자 구분 없는 검색
-        }
-
-        // 'sortBy' 매개변수에 따라 정렬 기준 설정
-        const orderBy =
-            sortBy === 'latest' ? { createdAt: 'desc' } :
-            sortBy === 'mostLiked' ? { likeCount: 'desc' } :
-            sortBy === 'mostPosted' ? { postCount: 'desc' } :
-            sortBy === 'mostBadge' ? { badgeCount: 'desc' } :
-            { createdAt: 'desc' }; // 기본값은 'latest'
-
-
-        // 페이지네이션 설정
-        const skip = (parseInt(page) - 1) * parseInt(pageSize);
-        const take = parseInt(pageSize);
-
-        // 그룹 목록 조회 (페이지네이션 및 정렬 적용)
-        const groups = await prisma.group.findMany({
-            where,
-            orderBy,
-            skip,
-            take,
-            include: {
-                groupBadges: true,
-                posts: true,
-                // groupLikes: true,
-            }
-        });
-
-        // 그룹별로 배지 확인 및 부여
-        // for (const group of groups) {
-        //     await checkAndAwardBadges(group.id);
-        // }
-
-        // 전체 아이템 수를 이용한 페이지 계산
-        const totalItemCount = await prisma.group.count({ where });
-        const totalPages = Math.ceil(totalItemCount / pageSize);
-
-        // 페이지네이션 및 정렬된 그룹 목록 응답
-        res.status(200).json({
-            currentPage: parseInt(page),
-            totalPages,
-            totalItemCount,
-            data: groups.map(group => ({
-                id: group.id,
-                name: group.name,
-                imageUrl: group.imageUrl,
-                isPublic: group.isPublic,
-                likeCount: group.likeCount,
-                badgeCount: group.badgeCount,
-                postCount: group.postCount,
-                createdAt: group.createdAt,
-                introduction: group.introduction
-            }))
-        });
-    } catch (error) {
-        res.status(500).json({ error: '그룹 목록 조회 중 오류 발생', details: error.message });
+    // 필터 객체 생성
+    const where = {};
+    if (isPublic) {
+      where.isPublic = isPublic === 'true'; // 'isPublic' 값을 boolean으로 변환
     }
+    if (keyword) {
+      where.name = { contains: keyword, mode: 'insensitive' }; // 대소문자 구분 없는 검색
+    }
+
+    // 'sortBy' 매개변수에 따라 정렬 기준 설정
+    const orderBy =
+      sortBy === 'latest' ? { createdAt: 'desc' } :
+      sortBy === 'mostLiked' ? { likeCount: 'desc' } :
+      sortBy === 'mostPosted' ? { postCount: 'desc' } :
+      sortBy === 'mostBadge' ? { badgeCount: 'desc' } : // badgeCount 기준 정렬
+      { createdAt: 'desc' }; // 기본값은 'latest'
+
+    // 페이지네이션 설정
+    const skip = (parseInt(page) - 1) * parseInt(pageSize);
+    const take = parseInt(pageSize);
+
+    // 그룹 목록 조회 (페이지네이션 및 정렬 적용)
+    const groups = await prisma.group.findMany({
+      where,
+      orderBy,
+      skip,
+      take,
+      include: {
+        groupBadges: true,
+        posts: true,
+      },
+    });
+
+    // 그룹별로 배지 확인 및 부여
+    for (const group of groups) {
+      const badgeIds = await getBadgeIdsForGroup(group);
+      await grantBadgeToGroup(group.id, badgeIds);
+
+      // badgeCount를 동기화
+      const updatedBadgeCount = await prisma.groupBadge.count({
+        where: { groupId: group.id },
+      });
+
+      // 그룹의 badgeCount 필드 업데이트
+      if (group.badgeCount !== updatedBadgeCount) {
+        await prisma.group.update({
+          where: { id: group.id },
+          data: { badgeCount: updatedBadgeCount },
+        });
+        group.badgeCount = updatedBadgeCount; // 로컬 캐시 동기화
+      }
+    }
+
+    // 전체 아이템 수를 이용한 페이지 계산
+    const totalItemCount = await prisma.group.count({ where });
+    const totalPages = Math.ceil(totalItemCount / pageSize);
+
+    // 페이지네이션 및 정렬된 그룹 목록 응답
+    res.status(200).json({
+      currentPage: parseInt(page),
+      totalPages,
+      totalItemCount,
+      data: groups.map(group => ({
+        id: group.id,
+        name: group.name,
+        imageUrl: group.imageUrl,
+        isPublic: group.isPublic,
+        likeCount: group.likeCount,
+        badgeCount: group.badgeCount, // badgeCount를 동기화하여 가져온 값 사용
+        postCount: group.postCount,
+        createdAt: group.createdAt,
+        introduction: group.introduction
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({ error: '그룹 목록 조회 중 오류 발생', details: error.message });
+  }
 };
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // 그룹 상세 정보 조회 및 배지 부여
