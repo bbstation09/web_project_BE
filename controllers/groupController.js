@@ -265,19 +265,55 @@ export const viewGroupList = async (req, res) => {
 
 
 
+// 그룹 상세 정보 조회
+export const viewGroupDetails = async (req, res) => {
+  try {
+    const { groupId } = req.params;
 
+    // groupId를 정수로 변환하여 유효성 검사
+    const id = parseInt(groupId);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: '잘못된 요청입니다' });
+    }
 
+    // 그룹 정보 조회
+    const group = await prisma.group.findUnique({
+      where: { id: id },
+      include: {
+        posts: true,
+        groupBadges: {
+          include: {
+            badge: true, // Include badge details
+          },
+        },
+      },
+    });
 
+    // 그룹이 존재하지 않는 경우
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
 
+    // 그룹이 획득한 배지 목록 생성
+    const badges = group.groupBadges.map(gb => gb.badge.name);
 
-
-
-
-
-
-
-// 그룹 상세 조회
-
+    // API 스펙에 맞는 응답 반환
+    res.status(200).json({
+      id: group.id,
+      name: group.name,
+      imageUrl: group.imageUrl,
+      isPublic: group.isPublic,
+      likeCount: group.likeCount,
+      badges, // List of badge names the group has earned
+      postCount: group.postCount,
+      createdAt: group.createdAt,
+      introduction: group.introduction,
+    });
+  } catch (error) {
+    console.error('Error retrieving group details:', error);
+    res.status(500).json({ message: 'Error retrieving group details', details: error.message });
+  }
+};
 
 
 
