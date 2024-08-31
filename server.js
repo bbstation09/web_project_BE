@@ -11,15 +11,15 @@ import cors from 'cors';
 
 const app = express();
 
-app.use(express.json());
-
 app.use(cors());
+
+app.use(express.json());
 
 app.use('/api/groups', groupRoutes); // 그룹
 
 app.use('/api/posts', postRoutes); // 게시물(추억)
 
-app.use('/api/comments', commentRoutes); // 댓글입니다
+app.use('/api/comments', commentRoutes); // 댓글
 
 // ES 모듈에서 __dirname과 __filename을 사용하기 위한 설정
 const __filename = fileURLToPath(import.meta.url);
