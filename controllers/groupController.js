@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 // import path from 'path';
 // import fs from 'fs';
 
-// // 그룹 등록 : 원래 코드
+// 그룹 등록 : 원래 코드
 export const registerGroup = async (req, res) => {
     try {
         const { name, imageUrl, introduction, isPublic, password } = req.body;
@@ -24,44 +24,6 @@ export const registerGroup = async (req, res) => {
         res.status(400).json({ message: "잘못된 요청입니다", details: error.message });
     }
 };
-
-
-// 그룹 등록
-// export const registerGroup = async (req, res) => {
-//   try {
-//     const { name, introduction, isPublic, password } = req.body;
-//     const imageUrl = req.file ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}` : null;
-
-//     // 그룹 정보와 이미지 URL을 데이터베이스에 저장
-//     const newGroup = await prisma.group.create({
-//       data: {
-//         name,
-//         introduction,
-//         isPublic,
-//         password,
-//         imageUrl,
-//         createdAt: new Date(),
-//       },
-//     });
-
-//     res.status(201).json(newGroup);
-//   } catch (error) {
-//     res.status(500).json({ message: '그룹 등록 오류', error: error.message });
-//   }
-// };
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // 그룹 정보 수정
@@ -245,7 +207,7 @@ export const viewGroupDetails = async (req, res) => {
             include: {
                 groupBadges: true,
                 posts: true,
-                groupLikes: true,
+                // groupLikes: true,
             }
         });
 
