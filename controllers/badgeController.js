@@ -87,67 +87,74 @@
 
 
 import { PrismaClient } from '@prisma/client';
+import { differenceInDays, eachDayOfInterval, isSameDay } from 'date-fns';
 
 const prisma = new PrismaClient();
 
-// 모든 배지 가져오기
-export const getAllBadges = async () => {
-  try {
-    return await prisma.badge.findMany();
-  } catch (error) {
-    console.error('배지 가져오기 실패:', error);
-    throw error;
-  }
+// 그룹의 배지 조건을 확인하여 부여할 배지 ID를 반환하는 함수
+export const getBadgeIdsForGroup = async (group) => {
+    const badgeIds = [];
+
+    // 1. 7일 연속 게시물 작성 배지 조건 확인
+    const last7DaysPosts = group.posts.filter(post => 
+        differenceInDays(new Date(), post.createdAt) < 7
+    );
+    const last7Days = eachDayOfInterval({
+        start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+        end: new Date()
+    });
+    const hasConsecutive7DaysPosts = last7Days.every(day =>
+        last7DaysPosts.some(post => isSameDay(day, post.createdAt))
+    );
+
+    if (hasConsecutive7DaysPosts) {
+        badgeIds.push(1); // 7일 연속 게시물 작성 배지
+    }
+
+    // 2. 게시물 수 20개 이상 작성 배지 조건 확인
+    if (group.posts.length >= 20) {
+        badgeIds.push(2); // 게시물 수 20개 이상 작성 배지
+    }
+
+    // 3. 그룹 생성 후 1년 경과 배지 조건 확인
+    const isOneYearOld = differenceInDays(new Date(), group.createdAt) >= 365;
+    if (isOneYearOld) {
+        badgeIds.push(3); // 그룹 생성 후 1년 경과 배지
+    }
+
+    // 4. 10,000개 이상의 그룹 좋아요 수 배지 조건 확인
+    if (group.likeCount >= 10000) {
+        badgeIds.push(4); // 10,000개 이상의 그룹 좋아요 수 배지
+    }
+
+    // 5. 게시물 하나의 좋아요 수가 10,000개 이상 배지 조건 확인
+    const hasPopularPost = group.posts.some(post => post.likeCount >= 10000);
+    if (hasPopularPost) {
+        badgeIds.push(5); // 게시물 좋아요 수 10,000개 이상 배지
+    }
+
+    return badgeIds;
 };
 
-// 그룹에 배지 부여
+// 그룹에 배지를 부여하는 함수
 export const grantBadgeToGroup = async (groupId, badgeIds) => {
-  try {
+    if (badgeIds.length === 0) return;
+
+    // 기존에 부여된 배지와 중복되지 않도록 필터링
     const existingBadges = await prisma.groupBadge.findMany({
-      where: { groupId },
-      select: { badgeId: true },
+        where: { groupId },
+        select: { badgeId: true }
     });
 
-    const existingBadgeIds = existingBadges.map(b => b.badgeId);
-    const newBadgeIds = badgeIds.filter(id => !existingBadgeIds.includes(id));
+    const existingBadgeIds = new Set(existingBadges.map(b => b.badgeId));
+    const newBadgeIds = badgeIds.filter(id => !existingBadgeIds.has(id));
 
     if (newBadgeIds.length > 0) {
-      await prisma.groupBadge.createMany({
-        data: newBadgeIds.map(badgeId => ({
-          groupId,
-          badgeId,
-        })),
-      });
-      console.log(`그룹 ${groupId}에 배지 ${newBadgeIds} 부여 완료.`);
+        // 새로운 배지 데이터 생성
+        await prisma.groupBadge.createMany({
+            data: newBadgeIds.map(id => ({ groupId, badgeId: id })),
+            skipDuplicates: true
+        });
     }
-  } catch (error) {
-    console.error('배지 부여 실패:', error);
-    throw error;
-  }
-};
-
-// 특정 그룹에 대해 조건을 만족하는 배지 ID 목록 반환
-export const getBadgeIdsForGroup = async (group) => {
-  const badgeIds = [];
-  const { createdAt, posts, likeCount } = group;
-
-  // 7일 연속 게시물 작성
-  const last7DaysPosts = posts.filter(post => (new Date() - new Date(post.createdAt)) / (1000 * 60 * 60 * 24) < 7);
-  if (last7DaysPosts.length >= 7) badgeIds.push(1);
-
-  // 게시물 수 20개 이상
-  if (posts.length >= 20) badgeIds.push(2);
-
-  // 그룹 생성 후 1년 경과
-  if ((new Date() - new Date(createdAt)) / (1000 * 60 * 60 * 24 * 365) >= 1) badgeIds.push(3);
-
-  // 10,000개 이상의 그룹 좋아요
-  if (likeCount >= 10000) badgeIds.push(4);
-
-  // 10,000개 이상의 게시물 좋아요
-  const hasPopularPost = posts.some(post => post.likeCount >= 10000);
-  if (hasPopularPost) badgeIds.push(5);
-
-  return badgeIds;
 };
 
