@@ -4,7 +4,7 @@ import {
   editGroup, 
   deleteGroup, 
   viewGroupList, 
-  viewGroupDetails, 
+  // viewGroupDetails, 
   checkGroupPermissions,
   likeGroup,
   checkGroupVisibility,
