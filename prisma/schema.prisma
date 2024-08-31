@@ -65,7 +65,7 @@ model Comment {
 }
 
 model Badge {
-  id          Int          @id @default(autoincrement())
+  id          Int          @id
   name        String       @db.VarChar(255)
   groupBadges GroupBadge[]
 }

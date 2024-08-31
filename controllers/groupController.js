@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 // import { getBadgeIdsForGroup, grantBadgeToGroup } from './badgeController.js';
+import { getBadgeIdsForGroup, grantBadgeToGroup } from './badgeController.js';
 const prisma = new PrismaClient();
 
 // 그룹 등록
@@ -112,7 +113,69 @@ export const deleteGroup = async (req, res) => {
 
 
 
-// 그룹 목록 조회
+// 그룹 목록 조회 : 오류 안나는 원래 코드
+// export const viewGroupList = async (req, res) => {
+//   try {
+//     const { page = 1, pageSize = 20, sortBy = 'latest', keyword, isPublic } = req.query;
+
+//     const where = {};
+//     if (isPublic !== undefined) {
+//       where.isPublic = isPublic === 'true'; 
+//     }
+//     if (keyword) {
+//       where.name = { contains: keyword, mode: 'insensitive' }; 
+//     }
+
+//     const orderBy =
+//       sortBy === 'latest' ? { createdAt: 'desc' } :
+//       sortBy === 'mostLiked' ? { likeCount: 'desc' } :
+//       sortBy === 'mostPosted' ? { postCount: 'desc' } :
+//       sortBy === 'mostBadge' ? { badgeCount: 'desc' } :
+//       { createdAt: 'desc' };
+
+//     const skip = (parseInt(page) - 1) * parseInt(pageSize);
+//     const take = parseInt(pageSize);
+
+//     // 그룹 목록 조회
+//     const groups = await prisma.group.findMany({
+//       where,
+//       orderBy,
+//       skip,
+//       take,
+//       include: {
+//         posts: true,
+//         groupBadges: { select: { badgeId: true } }, // Load existing badges
+//       }
+//     });
+
+//     // 전체 아이템 수를 이용한 페이지 계산
+//     const totalItemCount = await prisma.group.count({ where });
+//     const totalPages = Math.ceil(totalItemCount / pageSize);
+
+//     res.status(200).json({
+//       currentPage: parseInt(page),
+//       totalPages,
+//       totalItemCount,
+//       data: groups.map(group => ({
+//         id: group.id,
+//         name: group.name,
+//         imageUrl: group.imageUrl,
+//         isPublic: group.isPublic,
+//         likeCount: group.likeCount,
+//         badgeCount: group.badgeCount,
+//         postCount: group.postCount,
+//         createdAt: group.createdAt,
+//         introduction: group.introduction
+//       }))
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: '그룹 목록 조회 중 오류 발생', details: error.message });
+//   }
+// };
+
+
+
+// 그룹 목록 조회 : 뱃지가 추가된 버전
 export const viewGroupList = async (req, res) => {
   try {
     const { page = 1, pageSize = 20, sortBy = 'latest', keyword, isPublic } = req.query;
@@ -147,6 +210,33 @@ export const viewGroupList = async (req, res) => {
       }
     });
 
+    // 그룹별로 배지 개수 계산 및 부여
+    const groupsWithBadgeCount = await Promise.all(groups.map(async (group) => {
+      // Get badge IDs based on the group's activities and conditions
+      const badgeIdsToGrant = await getBadgeIdsForGroup(group);
+
+      // Grant badges to the group (if not already granted)
+      await grantBadgeToGroup(group.id, badgeIdsToGrant);
+
+      // Update the badge count for the group
+      const updatedGroupBadges = await prisma.groupBadge.findMany({
+        where: { groupId: group.id },
+      });
+
+      const updatedBadgeCount = updatedGroupBadges.length;
+
+      // Update the group with the new badge count
+      await prisma.group.update({
+        where: { id: group.id },
+        data: { badgeCount: updatedBadgeCount },
+      });
+
+      return {
+        ...group,
+        badgeCount: updatedBadgeCount,
+      };
+    }));
+
     // 전체 아이템 수를 이용한 페이지 계산
     const totalItemCount = await prisma.group.count({ where });
     const totalPages = Math.ceil(totalItemCount / pageSize);
@@ -155,22 +245,35 @@ export const viewGroupList = async (req, res) => {
       currentPage: parseInt(page),
       totalPages,
       totalItemCount,
-      data: groups.map(group => ({
+      data: groupsWithBadgeCount.map(group => ({
         id: group.id,
         name: group.name,
         imageUrl: group.imageUrl,
         isPublic: group.isPublic,
         likeCount: group.likeCount,
-        badgeCount: group.badgeCount,
+        badgeCount: group.badgeCount, // Include badge count
         postCount: group.postCount,
         createdAt: group.createdAt,
         introduction: group.introduction
       }))
     });
   } catch (error) {
-    res.status(500).json({ error: '그룹 목록 조회 중 오류 발생', details: error.message });
+    res.status(500).json({ error: 'Error retrieving group list', details: error.message });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // 그룹 상세 조회
