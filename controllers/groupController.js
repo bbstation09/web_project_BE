@@ -3,9 +3,6 @@ import { PrismaClient } from '@prisma/client';
 import { getBadgeIdsForGroup, grantBadgeToGroup } from './badgeController.js';
 const prisma = new PrismaClient();
 
-// import path from 'path';
-// import fs from 'fs';
-
 // 그룹 등록
 export const registerGroup = async (req, res) => {
     try {
@@ -116,7 +113,7 @@ export const deleteGroup = async (req, res) => {
 
 
 
-// // 그룹 목록 조회
+// // 그룹 목록 조회 : 원래 코드
 // export const viewGroupList = async (req, res) => {
 //     try {
 //         // 기본 화면 : 최신 순으로 그룹 목록 출력
@@ -217,6 +214,13 @@ export const viewGroupList = async (req, res) => {
     const take = parseInt(pageSize);
 
     // 그룹 목록 조회 (페이지네이션 및 정렬 적용)
+
+
+    // 그룹의 배지 조건 확인 및 부여
+    const badgeIds = await getBadgeIdsForGroup(group);
+    await grantBadgeToGroup(groupId, badgeIds);
+    
+    // 업데이트된 그룹 정보 반환
     const groups = await prisma.group.findMany({
       where,
       orderBy,
@@ -228,11 +232,6 @@ export const viewGroupList = async (req, res) => {
       }
     });
 
-    // 그룹별로 배지 확인 및 부여
-    for (const group of groups) {
-      const badgeIds = await getBadgeIdsForGroup(group);
-      await grantBadgeToGroup(group.id, badgeIds);
-    }
 
     // 전체 아이템 수를 이용한 페이지 계산
     const totalItemCount = await prisma.group.count({ where });
