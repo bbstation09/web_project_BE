@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import {
   GROUPS,
   POSTS,
-  BADGES,
+  // BADGES,
   COMMENTS,
   GROUPBADGES,
   // GROUPLIKES,
@@ -10,6 +10,17 @@ import {
 } from './mock.js';
 
 const prisma = new PrismaClient();
+
+
+// 뱃지의 종류
+const badges = [
+  { name: "7일 연속 게시글 등록" },
+  { name: "게시글 수 20개 이상 등록" },
+  { name: "그룹 생성 후 1년 달성" },
+  { name: "그룹 공감 1만 개 이상 받기" },
+  { name: "게시글 공감 1만 개 이상 받기" }
+];
+
 
 async function main() {
 
@@ -36,10 +47,24 @@ async function main() {
   );
 
   // 뱃지 데이터 시딩
-  await prisma.badge.createMany({
-    data: BADGES,
-    skipDuplicates: true,
-  });
+  // await prisma.badge.createMany({
+  //   data: BADGES,
+  //   skipDuplicates: true,
+  // });
+
+
+  // 뱃지 데이터 시딩 : 뱃지 데이터가 데이터베이스에 있는지 확인하고 없으면 추가
+  // 뱃지 중복 생성 없이 뱃지 데이터를 데이터베이스에 추가 가능
+  await Promise.all(
+    badges.map(async (badge) => {
+      await prisma.badge.upsert({
+        where: { name: badge.name },
+        update: {},
+        create: badge,
+      });
+    })
+  );
+
 
   // 댓글 데이터 시딩
   await Promise.all(

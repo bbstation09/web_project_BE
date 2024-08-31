@@ -9,7 +9,8 @@ import {
   likeGroup,
   checkGroupVisibility,
   registerPost,
-  viewPostList
+  viewPostList,
+  updateGroupBadges
 } from '../controllers/groupController.js';
 
 const router = express.Router();
@@ -18,7 +19,28 @@ router.post('/', registerGroup); // 그룹 등록 -> 완료
 router.get('/', viewGroupList); // 그룹 목록 조회 -> 획득 뱃지 순 정렬 한번만 더 확인해보기
 router.put('/:groupId', editGroup); // 그룹 수정 -> 완료
 router.delete('/:groupId', deleteGroup); // 그룹 삭제 -> 완료
-router.get('/:groupId', viewGroupDetails); // 그룹 상세 정보 조회 -> 완료
+// router.get('/:groupId', viewGroupDetails); // 그룹 상세 정보 조회 -> 완료
+
+// 그룹 상세 조회 및 배지 업데이트
+router.get('/:groupId', async (req, res, next) => {
+  // `viewGroupDetails` 미들웨어 호출
+  await viewGroupDetails(req, res, async (err) => {
+    if (err) {
+      return next(err);
+    }
+    
+    // 그룹 ID 가져오기
+    const groupId = parseInt(req.params.groupId, 10);
+
+    // `updateGroupBadges` 호출
+    try {
+      await updateGroupBadges({ params: { groupId } }, res);
+    } catch (error) {
+      next(error);
+    }
+  });
+});
+
 router.post('/:groupId/verify-password', checkGroupPermissions) // 그룹 조회 권한 확인 -> 완료
 router.post('/:groupId/like', likeGroup) // 그룹 공감 하기 -> 완료
 router.get('/:groupId/is-public', checkGroupVisibility) // 그룹 공개 여부 확인 -> 완료

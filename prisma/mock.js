@@ -507,61 +507,61 @@ export const COMMENTS = [
 ];
 
 
-export const BADGES = [
-  {
-    id: 1,
-    name: "우수 기여자",
-  },
-  {
-    id: 2,
-    name: "활동 왕",
-  },
-  {
-    id: 3,
-    name: "최고의 인기글",
-  },
-  {
-    id: 4,
-    name: "베스트 리뷰어",
-  },
-  {
-    id: 5,
-    name: "친절한 멤버",
-  },
-  {
-    id: 6,
-    name: "모범 회원",
-  },
-  {
-    id: 7,
-    name: "콘텐츠 제작자",
-  },
-  {
-    id: 8,
-    name: "핫 아이템",
-  },
-  {
-    id: 9,
-    name: "장기 활동 회원",
-  },
-  {
-    id: 10,
-    name: "열정적인 참여자",
-  },
-];
+// export const BADGES = [
+//   {
+//     id: 1,
+//     name: "우수 기여자",
+//   },
+//   {
+//     id: 2,
+//     name: "활동 왕",
+//   },
+//   {
+//     id: 3,
+//     name: "최고의 인기글",
+//   },
+//   {
+//     id: 4,
+//     name: "베스트 리뷰어",
+//   },
+//   {
+//     id: 5,
+//     name: "친절한 멤버",
+//   },
+//   {
+//     id: 6,
+//     name: "모범 회원",
+//   },
+//   {
+//     id: 7,
+//     name: "콘텐츠 제작자",
+//   },
+//   {
+//     id: 8,
+//     name: "핫 아이템",
+//   },
+//   {
+//     id: 9,
+//     name: "장기 활동 회원",
+//   },
+//   {
+//     id: 10,
+//     name: "열정적인 참여자",
+//   },
+// ];
 
-export const GROUPBADGES = [
-  { groupId: 1, badgeId: 1 },
-  { groupId: 2, badgeId: 2 },
-  { groupId: 3, badgeId: 3 },
-  { groupId: 4, badgeId: 4 },
-  { groupId: 5, badgeId: 5 },
-  { groupId: 6, badgeId: 6 },
-  { groupId: 7, badgeId: 7 },
-  { groupId: 8, badgeId: 8 },
-  { groupId: 9, badgeId: 9 },
-  { groupId: 10, badgeId: 10 },
-];
+// export const GROUPBADGES = [
+//   { groupId: 1, badgeId: 1 },
+//   { groupId: 2, badgeId: 2 },
+//   { groupId: 3, badgeId: 3 },
+//   { groupId: 4, badgeId: 4 },
+//   { groupId: 5, badgeId: 5 },
+//   { groupId: 6, badgeId: 6 },
+//   { groupId: 7, badgeId: 7 },
+//   { groupId: 8, badgeId: 8 },
+//   { groupId: 9, badgeId: 9 },
+//   { groupId: 10, badgeId: 10 },
+// ];
 
 // export const GROUPLIKES = [
 //   { groupId: 1, count: 150},
