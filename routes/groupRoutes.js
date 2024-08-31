@@ -29,11 +29,6 @@ router.post('/:groupId/posts', registerPost) // 게시글 등록 -> 완료
 router.get('/:groupId/posts', viewPostList) // 게시글 목록 조회 -> 완료
 
 
-
-// const upload = multer({ storage: multer.diskStorage({ destination: 'uploads/', filename: (req, file, cb) => cb(null, file.originalname) }) });
-
-
-
 export default router;
 
 
