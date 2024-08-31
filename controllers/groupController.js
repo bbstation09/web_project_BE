@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-// import { checkAndAwardBadges } from './badgeController.js'; // 배지 부여 기능 가져오기
-import { getBadgeIdsForGroup, grantBadgeToGroup } from './badgeController.js';
+// import { getBadgeIdsForGroup, grantBadgeToGroup } from './badgeController.js';
 const prisma = new PrismaClient();
 
 // 그룹 등록
@@ -119,96 +118,62 @@ export const viewGroupList = async (req, res) => {
     const { page = 1, pageSize = 20, sortBy = 'latest', keyword, isPublic } = req.query;
 
     const where = {};
-    if (isPublic) {
-        where.isPublic = isPublic === 'true'; 
+    if (isPublic !== undefined) {
+      where.isPublic = isPublic === 'true'; 
     }
     if (keyword) {
-        where.name = { contains: keyword, mode: 'insensitive' }; 
+      where.name = { contains: keyword, mode: 'insensitive' }; 
     }
 
     const orderBy =
-        sortBy === 'latest' ? { createdAt: 'desc' } :
-        sortBy === 'mostLiked' ? { likeCount: 'desc' } :
-        sortBy === 'mostPosted' ? { postCount: 'desc' } :
-        sortBy === 'mostBadge' ? { badgeCount: 'desc' } :
-        { createdAt: 'desc' };
+      sortBy === 'latest' ? { createdAt: 'desc' } :
+      sortBy === 'mostLiked' ? { likeCount: 'desc' } :
+      sortBy === 'mostPosted' ? { postCount: 'desc' } :
+      sortBy === 'mostBadge' ? { badgeCount: 'desc' } :
+      { createdAt: 'desc' };
 
     const skip = (parseInt(page) - 1) * parseInt(pageSize);
     const take = parseInt(pageSize);
 
     // 그룹 목록 조회
     const groups = await prisma.group.findMany({
-        where,
-        orderBy,
-        skip,
-        take,
-        include: {
-            groupBadges: true,
-            posts: true,
-        }
+      where,
+      orderBy,
+      skip,
+      take,
+      include: {
+        posts: true,
+        groupBadges: { select: { badgeId: true } }, // Load existing badges
+      }
     });
-
-    // 그룹별로 배지 확인 및 부여
-    await Promise.all(groups.map(async (group) => {
-        const badgeIds = await getBadgeIdsForGroup(group);
-        await grantBadgeToGroup(group.id, badgeIds);
-    }));
-
-    // 그룹 목록과 배지 개수 업데이트
-    const groupsWithBadgeCount = await Promise.all(groups.map(async (group) => {
-        const badgeCount = await prisma.groupBadge.count({
-            where: { groupId: group.id }
-        });
-        return {
-            ...group,
-            badgeCount
-        };
-    }));
 
     // 전체 아이템 수를 이용한 페이지 계산
     const totalItemCount = await prisma.group.count({ where });
     const totalPages = Math.ceil(totalItemCount / pageSize);
 
     res.status(200).json({
-        currentPage: parseInt(page),
-        totalPages,
-        totalItemCount,
-        data: groupsWithBadgeCount.map(group => ({
-            id: group.id,
-            name: group.name,
-            imageUrl: group.imageUrl,
-            isPublic: group.isPublic,
-            likeCount: group.likeCount,
-            badgeCount: group.badgeCount,
-            postCount: group.postCount,
-            createdAt: group.createdAt,
-            introduction: group.introduction
-        }))
+      currentPage: parseInt(page),
+      totalPages,
+      totalItemCount,
+      data: groups.map(group => ({
+        id: group.id,
+        name: group.name,
+        imageUrl: group.imageUrl,
+        isPublic: group.isPublic,
+        likeCount: group.likeCount,
+        badgeCount: group.badgeCount,
+        postCount: group.postCount,
+        createdAt: group.createdAt,
+        introduction: group.introduction
+      }))
     });
-} catch (error) {
+  } catch (error) {
     res.status(500).json({ error: '그룹 목록 조회 중 오류 발생', details: error.message });
-}
+  }
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// 그룹 상세 조회
 
 
 
@@ -310,13 +275,13 @@ export const likeGroup = async (req, res) => {
         }
 
         // 공감 추가 (중복 공감 허용)
-        await prisma.groupLike.create({
-            data: {
-                groupId: groupId,
-                // `count` 필드를 설정하는 부분 추가
-                count: 1  // `count`를 1로 설정하여 새 공감을 기록합니다
-            }
-        });
+        // await prisma.groupLike.create({
+        //     data: {
+        //         groupId: groupId,
+        //         // `count` 필드를 설정하는 부분 추가
+        //         count: 1  // `count`를 1로 설정하여 새 공감을 기록합니다
+        //     }
+        // });
 
         // 그룹의 likeCount 업데이트
         await prisma.group.update({
