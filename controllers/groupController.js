@@ -175,7 +175,7 @@ export const deleteGroup = async (req, res) => {
 
 
 
-// 그룹 목록 조회 : 뱃지가 추가된 버전
+// 그룹 목록 조회 : 뱃지 count가 추가된 버전
 export const viewGroupList = async (req, res) => {
   try {
     const { page = 1, pageSize = 20, sortBy = 'latest', keyword, isPublic } = req.query;
