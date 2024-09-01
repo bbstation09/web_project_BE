@@ -11,7 +11,8 @@ import cors from 'cors';
 
 const app = express();
 
-app.use(cors());
+// 안되면 지워
+app.use(cors({ origin: 'https://project-zogakzip-fe.vercel.app' }));
 
 app.use(express.json());
 
