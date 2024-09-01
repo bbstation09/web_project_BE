@@ -12,7 +12,10 @@ import cors from 'cors';
 const app = express();
 
 // 안되면 지워
-app.use(cors({ origin: 'https://project-zogakzip-fe.vercel.app' }));
+app.use(cors({
+  origin: 'https://project-zogakzip-fe.vercel.app',
+  credentials: true
+}));
 
 app.use(express.json());
 
