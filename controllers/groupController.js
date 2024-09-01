@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-// import { getBadgeIdsForGroup, grantBadgeToGroup } from './badgeController.js';
 import { getBadgeIdsForGroup, grantBadgeToGroup } from './badgeController.js';
 const prisma = new PrismaClient();
 
