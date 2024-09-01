@@ -1,6 +1,3 @@
-// imagecontroller.js
-import path from 'path';
-
 // 이미지 업로드 후 처리 함수
 export const uploadImage = (req, res) => {
   if (!req.file) {
