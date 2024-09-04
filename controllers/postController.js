@@ -187,7 +187,7 @@ export const viewPostDetails = async (req, res) => {
 
 
 
-// 게시물 공감 하기 : 해당 게시물과 그 게시물이 속해 있는 그룹 공감 수 상승, 중복 허용
+// 게시물 공감 하기
 export const likePost = async (req, res) => {
     const { postId } = req.params; // URL 매개변수에서 postId 가져오기
 
@@ -208,15 +208,7 @@ export const likePost = async (req, res) => {
         data: { likeCount: post.likeCount + 1 },
       });
   
-      // 그룹 ID가 있는 경우, 그룹의 likeCount도 증가시킴
-      if (post.groupId) {
-        await prisma.group.update({
-          where: { id: post.groupId },
-          data: { likeCount: { increment: 1 } },
-        });
-      }
   
-      // 성공 응답 반환
       return res.status(200).json({ message: '게시글에 좋아요를 눌렀습니다' });
     } catch (error) {
       // 서버 오류가 발생한 경우

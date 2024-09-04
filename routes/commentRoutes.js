@@ -1,9 +1,7 @@
 import express from 'express';
 import { 
-  // registerComment, 
   editComment, 
-  deleteComment, 
-  // viewCommentList 
+  deleteComment
 } from '../controllers/commentController.js';
 
 const router = express.Router();

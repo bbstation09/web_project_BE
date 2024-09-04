@@ -111,78 +111,19 @@ export const deleteGroup = async (req, res) => {
   };
 
 
-
-// 그룹 목록 조회 : 오류 안나는 원래 코드
-// export const viewGroupList = async (req, res) => {
-//   try {
-//     const { page = 1, pageSize = 20, sortBy = 'latest', keyword, isPublic } = req.query;
-
-//     const where = {};
-//     if (isPublic !== undefined) {
-//       where.isPublic = isPublic === 'true'; 
-//     }
-//     if (keyword) {
-//       where.name = { contains: keyword, mode: 'insensitive' }; 
-//     }
-
-//     const orderBy =
-//       sortBy === 'latest' ? { createdAt: 'desc' } :
-//       sortBy === 'mostLiked' ? { likeCount: 'desc' } :
-//       sortBy === 'mostPosted' ? { postCount: 'desc' } :
-//       sortBy === 'mostBadge' ? { badgeCount: 'desc' } :
-//       { createdAt: 'desc' };
-
-//     const skip = (parseInt(page) - 1) * parseInt(pageSize);
-//     const take = parseInt(pageSize);
-
-//     // 그룹 목록 조회
-//     const groups = await prisma.group.findMany({
-//       where,
-//       orderBy,
-//       skip,
-//       take,
-//       include: {
-//         posts: true,
-//         groupBadges: { select: { badgeId: true } }, // Load existing badges
-//       }
-//     });
-
-//     // 전체 아이템 수를 이용한 페이지 계산
-//     const totalItemCount = await prisma.group.count({ where });
-//     const totalPages = Math.ceil(totalItemCount / pageSize);
-
-//     res.status(200).json({
-//       currentPage: parseInt(page),
-//       totalPages,
-//       totalItemCount,
-//       data: groups.map(group => ({
-//         id: group.id,
-//         name: group.name,
-//         imageUrl: group.imageUrl,
-//         isPublic: group.isPublic,
-//         likeCount: group.likeCount,
-//         badgeCount: group.badgeCount,
-//         postCount: group.postCount,
-//         createdAt: group.createdAt,
-//         introduction: group.introduction
-//       }))
-//     });
-//   } catch (error) {
-//     res.status(500).json({ error: '그룹 목록 조회 중 오류 발생', details: error.message });
-//   }
-// };
-
-
-
-// 그룹 목록 조회 : 뱃지 count가 추가된 버전
+// 그룹 목록 조회
 export const viewGroupList = async (req, res) => {
   try {
-    const { page = 1, pageSize = 20, sortBy = 'latest', keyword, isPublic } = req.query;
+    // 한 페이지에 출력할 그룹 수 조정 = pageSize
+    const { page = 1, pageSize = 8, sortBy = 'latest', keyword, isPublic } = req.query;
 
     const where = {};
+
     if (isPublic !== undefined) {
       where.isPublic = isPublic === 'true'; 
     }
+
+    // 그룹명 검색
     if (keyword) {
       where.name = { contains: keyword, mode: 'insensitive' }; 
     }
@@ -209,32 +150,32 @@ export const viewGroupList = async (req, res) => {
       }
     });
 
-    // 그룹별로 배지 개수 계산 및 부여
-    const groupsWithBadgeCount = await Promise.all(groups.map(async (group) => {
-      // Get badge IDs based on the group's activities and conditions
-      const badgeIdsToGrant = await getBadgeIdsForGroup(group);
+// 그룹별로 배지 개수 계산 및 부여
+const groupsWithBadgeCount = await Promise.all(groups.map(async (group) => {
+  // 그룹의 활동 및 조건에 따라 배지 ID를 가져온다
+  const badgeIdsToGrant = await getBadgeIdsForGroup(group);
 
-      // Grant badges to the group (if not already granted)
-      await grantBadgeToGroup(group.id, badgeIdsToGrant);
+  // (이미 부여되지 않은 경우) 그룹에 배지를 부여
+  await grantBadgeToGroup(group.id, badgeIdsToGrant);
 
-      // Update the badge count for the group
-      const updatedGroupBadges = await prisma.groupBadge.findMany({
-        where: { groupId: group.id },
-      });
+  // 그룹의 배지 개수를 업데이트
+  const updatedGroupBadges = await prisma.groupBadge.findMany({
+    where: { groupId: group.id },
+  });
 
-      const updatedBadgeCount = updatedGroupBadges.length;
+  const updatedBadgeCount = updatedGroupBadges.length;
 
-      // Update the group with the new badge count
-      await prisma.group.update({
-        where: { id: group.id },
-        data: { badgeCount: updatedBadgeCount },
-      });
+  // 새로운 배지 개수로 그룹을 업데이트
+  await prisma.group.update({
+    where: { id: group.id },
+    data: { badgeCount: updatedBadgeCount },
+  });
 
-      return {
-        ...group,
-        badgeCount: updatedBadgeCount,
-      };
-    }));
+  return {
+    ...group,
+    badgeCount: updatedBadgeCount,
+  };
+}));
 
     // 전체 아이템 수를 이용한 페이지 계산
     const totalItemCount = await prisma.group.count({ where });
@@ -250,7 +191,7 @@ export const viewGroupList = async (req, res) => {
         imageUrl: group.imageUrl,
         isPublic: group.isPublic,
         likeCount: group.likeCount,
-        badgeCount: group.badgeCount, // Include badge count
+        badgeCount: group.badgeCount, 
         postCount: group.postCount,
         createdAt: group.createdAt,
         introduction: group.introduction
@@ -262,61 +203,7 @@ export const viewGroupList = async (req, res) => {
 };
 
 
-
-
-// 그룹 상세 정보 조회 : 뱃지 추가 but 업데이트 바로 안되는 버전
-// export const viewGroupDetails = async (req, res) => {
-//   try {
-//     const { groupId } = req.params;
-
-//     // groupId를 정수로 변환하여 유효성 검사
-//     const id = parseInt(groupId);
-//     if (isNaN(id)) {
-//       return res.status(400).json({ message: '잘못된 요청입니다' });
-//     }
-
-//     // 그룹 정보 조회
-//     const group = await prisma.group.findUnique({
-//       where: { id: id },
-//       include: {
-//         posts: true,
-//         groupBadges: {
-//           include: {
-//             badge: true, // Include badge details
-//           },
-//         },
-//       },
-//     });
-
-//     // 그룹이 존재하지 않는 경우
-//     if (!group) {
-//       return res.status(404).json({ message: 'Group not found' });
-//     }
-
-//     // 그룹이 획득한 배지 목록 생성
-//     const badges = group.groupBadges.map(gb => gb.badge.name);
-
-//     // API 스펙에 맞는 응답 반환
-//     res.status(200).json({
-//       id: group.id,
-//       name: group.name,
-//       imageUrl: group.imageUrl,
-//       isPublic: group.isPublic,
-//       likeCount: group.likeCount,
-//       badges, // List of badge names the group has earned
-//       postCount: group.postCount,
-//       createdAt: group.createdAt,
-//       introduction: group.introduction,
-//     });
-//   } catch (error) {
-//     console.error('Error retrieving group details:', error);
-//     res.status(500).json({ message: 'Error retrieving group details', details: error.message });
-//   }
-// };
-
-
-
-// 그룹 상세 정보 조회 : 뱃지 추가도 되고 업데이트도 바로바로 되는 버전
+// 그룹 상세 정보 조회
 export const viewGroupDetails = async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -334,7 +221,7 @@ export const viewGroupDetails = async (req, res) => {
         posts: true,
         groupBadges: {
           include: {
-            badge: true, // Include badge details
+            badge: true, 
           },
         },
       },
@@ -355,7 +242,7 @@ export const viewGroupDetails = async (req, res) => {
       include: {
         groupBadges: {
           include: {
-            badge: true, // Include badge details
+            badge: true, 
           },
         },
       },
@@ -371,7 +258,7 @@ export const viewGroupDetails = async (req, res) => {
       imageUrl: updatedGroup.imageUrl,
       isPublic: updatedGroup.isPublic,
       likeCount: updatedGroup.likeCount,
-      badges, // List of badge names the group has earned
+      badges, 
       postCount: updatedGroup.postCount,
       createdAt: updatedGroup.createdAt,
       introduction: updatedGroup.introduction,
@@ -381,14 +268,6 @@ export const viewGroupDetails = async (req, res) => {
     res.status(500).json({ message: 'Error retrieving group details', details: error.message });
   }
 };
-
-
-
-
-
-
-
-
 
 
 // 그룹 조회 권한 확인
@@ -485,15 +364,6 @@ export const likeGroup = async (req, res) => {
         if (!group) {
             return res.status(404).json({ message: '존재하지 않는 그룹입니다' });
         }
-
-        // 공감 추가 (중복 공감 허용)
-        // await prisma.groupLike.create({
-        //     data: {
-        //         groupId: groupId,
-        //         // `count` 필드를 설정하는 부분 추가
-        //         count: 1  // `count`를 1로 설정하여 새 공감을 기록합니다
-        //     }
-        // });
 
         // 그룹의 likeCount 업데이트
         await prisma.group.update({
@@ -605,7 +475,6 @@ export const viewPostList = async (req, res) => {
     if (keyword) {
       where.OR = [
         { title: { contains: keyword, mode: 'insensitive' } },
-        { content: { contains: keyword, mode: 'insensitive' } },
         { tags: { contains: keyword, mode: 'insensitive' } },
       ];
     }

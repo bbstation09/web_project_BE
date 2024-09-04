@@ -1,15 +1,15 @@
-POST http://localhost:3000/api/posts/15/comments
+POST http://localhost:3000/api/posts/196/comments
 Content-Type: application/json
 
 {
-	"nickname": "인스피릿",
-	"content": "식목일5도 기대기대",
-	"password": "910208"
+	"nickname": "까미언니",
+	"content": "우리 까미랑도 친해지면 좋겠어요!",
+	"password": "12345"
 }
 
 ###
 
-GET http://localhost:3000/api/posts/15/comments
+GET http://localhost:3000/api/posts/196/comments
 
 ###
 
@@ -17,14 +17,14 @@ PUT http://localhost:3000/api/comments/122
 Content-Type: application/json
 
 {
-	"nickname": "ISPR",
-	"content": "우현이는 천재이에",
-	"password": "910208"
+	"nickname": "까미언니",
+	"content": "우리 까미 생각난당",
+	"password": "12345"
 }
 
 ###
 
-DELETE http://localhost:3000/api/comments/123
+DELETE http://localhost:3000/api/comments/424
 Content-Type: application/json
 
 {

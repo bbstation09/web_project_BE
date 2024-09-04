@@ -1,4 +1,4 @@
-POST http://localhost:3000/api/groups/25/posts
+POST http://localhost:3000/api/groups/26/posts
 Content-Type: application/json
 
 {
@@ -7,7 +7,7 @@ Content-Type: application/json
 	"content": "우현이는 천재강아디 아기명창이 맞다ㅇㅇ",
 	"postPassword": "0208",
 	"groupPassword": "0609",
-	"imageUrl": "http://localhost:3000/uploads/1725001542328.jpeg",
+	"imageUrl": "https://example.com/images/animals.jpg",
 	"tags": [ "인피니트", "남우현" ],
 	"location": "올림픽홀",
 	"moment": "2024-09-22",
@@ -16,7 +16,7 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:3000/api/groups/24/posts
+GET http://localhost:3000/api/groups/2/posts
 
 ###
 
@@ -29,7 +29,7 @@ Content-Type: application/json
 	"title": "우현이 콘서트에 갔다옴",
 	"content": "사랑하는 우혀니!!",
 	"postPassword": "0208",
-	"imageUrl": "https://example.com/images/nwh0208.jpg",
+	"imageUrl": "",
 	"tags": [ "남우현" ],
 	"location": "올림픽홀",
 	"moment": "2024-09-22",
@@ -53,7 +53,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:3000/api/posts/24/like
+POST http://localhost:3000/api/posts/2/like
 
 ###
 GET http://localhost:3000/api/posts/15/is-public

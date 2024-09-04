@@ -23,7 +23,7 @@ export const grantBadgeToGroup = async (groupId, badgeIds) => {
     const existingBadgeIds = existingBadges.map(b => b.badgeId);
     const newBadgeIds = badgeIds.filter(id => !existingBadgeIds.includes(id));
 
-    // Check if the badges and group exist before creating new records
+    // 배지와 그룹이 존재하는지 먼저 확인
     const [group, badges] = await Promise.all([
       prisma.group.findUnique({ where: { id: groupId } }),
       prisma.badge.findMany({ where: { id: { in: newBadgeIds } } })
@@ -66,10 +66,10 @@ export const getBadgeIdsForGroup = async (group) => {
   // 그룹 생성 후 1년 경과
   if ((new Date() - new Date(createdAt)) / (1000 * 60 * 60 * 24 * 365) >= 1) badgeIds.push(3);
 
-  // 10,000개 이상의 그룹 좋아요
+  // 그룹 공감 수 : 10,000개 이상 달성
   if (likeCount >= 10000) badgeIds.push(4);
 
-  // 10,000개 이상의 게시물 좋아요
+  // 게시물 공감 수 : 10,000개 이상 달성
   const hasPopularPost = posts.some(post => post.likeCount >= 10000);
   if (hasPopularPost) badgeIds.push(5);
 

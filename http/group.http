@@ -2,23 +2,36 @@ POST http://localhost:3000/api/groups
 Content-Type: application/json
 
 {
-	"name": "하스뮤 loversclub",
-	"password": "0609",
-	"imageUrl": "http://localhost:3000/uploads/1725001542328.jpeg",
+	"name": "해피의 일상 기록",
+	"password": "1234",
+	"imageUrl": "http://localhost:3000/uploads/1725427641362.jpg",
 	"isPublic": true,
-	"introduction": "그 시절 하스뮤덕들 모여라아아"
+	"introduction": "해피의 공간에 놀러오세요~"
 }
 
 ###
-PUT http://localhost:3000/api/groups/19
+
+POST http://localhost:3000/api/groups
 Content-Type: application/json
 
 {
-	"name": "HLC",
-	"password": "0609",
-	"imageUrl": "https://example.com/images/animals.jpg",
+	"name": "해피의 일상 기록123",
+	"password": "1234",
 	"isPublic": true,
-	"introduction": "하스뮤덕들 대 환 영"
+	"introduction": "해피의 공간에 놀러오세요~"
+}
+
+
+###
+PUT http://localhost:3000/api/groups/27
+Content-Type: application/json
+
+{
+	"name": "해피의 일상 기록",
+	"password": "1234",
+	"imageUrl": "http://localhost:3000/uploads/1725427641362.jpg",
+	"isPublic": false,
+	"introduction": "해피의 공간에 놀러오세요~"
 }
 
 ###
@@ -32,7 +45,7 @@ Content-Type: application/json
 ###
 
 
-GET http://localhost:3000/api/groups/25
+GET http://localhost:3000/api/groups/1
 
 ###
 
@@ -40,7 +53,7 @@ GET http://localhost:3000/api/groups?sortBy=mostLiked
 
 ###
 
-GET http://localhost:3000/api/groups?sortBy=mostPosted
+GET http://localhost:3000/api/groups?sortBy=mostPosted&page=2
 
 ###
 GET http://localhost:3000/api/groups?sortBy=mostBadge
@@ -54,18 +67,18 @@ GET http://localhost:3000/api/groups?isPublic=true
 
 ###
 
-GET http://localhost:3000/api/groups/21
+GET http://localhost:3000/api/groups/1
 
 ###
-POST http://localhost:3000/api/groups/9/verify-password
+POST http://localhost:3000/api/groups/1/verify-password
 Content-Type: application/json
 
 {
-	"password": "movie1234"
+	"password": "family123"
 }
 
 ###
-POST http://localhost:3000/api/groups/25/like
+POST http://localhost:3000/api/groups/1/like
 
 ###
-GET http://localhost:3000/api/groups/6/is-public
+GET http://localhost:3000/api/groups/1/is-public

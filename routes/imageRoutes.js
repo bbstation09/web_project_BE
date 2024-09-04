@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
-import { uploadImage } from '../controllers/imageController.js';
 import path from 'path';
+import { uploadImage } from '../controllers/imageController.js';
 
 // Multer 설정: 이미지를 업로드할 경로와 파일명을 설정
 const storage = multer.diskStorage({
@@ -17,7 +17,6 @@ const upload = multer({ storage });
 
 const router = express.Router();
 
-// /api/image/upload 경로로 POST 요청이 들어왔을 때 uploadImage 함수 실행
-router.post('/upload', upload.single('image'), uploadImage);
+router.post('/', upload.single('image'), uploadImage); // /api/image 경로로 POST 요청이 들어왔을 때 uploadImage 함수 실행
 
 export default router;

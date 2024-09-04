@@ -1,18 +1,18 @@
-POST http://localhost:3000/api/image/upload
+POST http://localhost:3000/api/image
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary
-Content-Disposition: form-data; name="image"; filename="highschool.jpeg"
+Content-Disposition: form-data; name="image"; filename="반려견.jpg"
 Content-Type: image/jpeg
 
-< ./imageFiles/highschool.jpeg
+< ./imageFiles/반려견.jpg
 --boundary--
 
 ###
 GET http://localhost:3000/uploads/1725001542328.jpeg
 
 ###
-POST http://localhost:3000/api/image/upload
+POST http://localhost:3000/api/image
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary
