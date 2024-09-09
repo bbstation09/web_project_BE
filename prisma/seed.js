@@ -1,9 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import {
-  GROUPS,
-  POSTS,
-  COMMENTS
-} from './mock.js';
+import { GROUPS, POSTS, COMMENTS } from './mock.js';
 
 const prisma = new PrismaClient();
 
@@ -24,10 +20,12 @@ async function main() {
   await prisma.post.deleteMany();
   await prisma.group.deleteMany();
 
-  // Group, Post, Comment 테이블 시퀀스 재설정
+  // 시퀀스 리셋
   await prisma.$executeRaw`SELECT setval(pg_get_serial_sequence('"Group"', 'id'), COALESCE(MAX(id), 1), false) FROM "Group"`;
   await prisma.$executeRaw`SELECT setval(pg_get_serial_sequence('"Post"', 'id'), COALESCE(MAX(id), 1), false) FROM "Post"`;
   await prisma.$executeRaw`SELECT setval(pg_get_serial_sequence('"Comment"', 'id'), COALESCE(MAX(id), 1), false) FROM "Comment"`;
+  await prisma.$executeRaw`SELECT setval(pg_get_serial_sequence('"Badge"', 'id'), COALESCE(MAX(id), 1), false) FROM "Badge"`;
+  await prisma.$executeRaw`SELECT setval(pg_get_serial_sequence('"GroupBadge"', 'id'), COALESCE(MAX(id), 1), false) FROM "GroupBadge"`;
 
   // 그룹 데이터 시딩
   await prisma.group.createMany({
@@ -35,7 +33,7 @@ async function main() {
     skipDuplicates: true,
   });
 
-  // 추억(게시물) 데이터 시딩
+  // 게시물 데이터 시딩
   await Promise.all(
     POSTS.map(async (post) => {
       await prisma.post.create({ data: post });
